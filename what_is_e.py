@@ -7,9 +7,25 @@ from  plotly import graph_objects as go
 from typing import List
 import pandas as pd
 
+interval = st.sidebar.slider(
+    "Interval",
+    min_value=0.000001,
+    max_value=1.0,
+    step=0.00001,
+    value=0.5
+)
+Δt = st.sidebar.number_input(
+    "Choose Δt for computing derivative:",
+    min_value=0.00001,
+    max_value=0.1,
+    value=0.001,
+    step=0.05
+)
+
+
 def _plot_exponentials():
     base = 1
-    interval = st.slider("Interval:", min_value=0.000001, max_value=1.0, step=0.00001, value=0.5)
+
     t = np.arange(0., 5., interval)
     fig, ax = plt.subplots()
 
@@ -62,77 +78,59 @@ st.markdown("""
 
 st.latex(
     r"""
-    f'(t) = \frac{df}{dt} = \lim_{dt \to 0} \frac{f(t + dt) - f(t)}{dt}
-                          = \frac{f(t + dt) - f(t)}{dt} \hspace{3 pt} \left( \text {where dt is small enough.} \right)
+    f'(t) = \frac{Δf}{Δt} = \frac{f(t + Δt) - f(t)}{Δt} \hspace{3 pt} \left( \text {where \Δt is small enough.} \right)
     """
 )
 
 st.markdown("""
-    Let us substitute the exponential expression:
-""")
-
-st.latex(
-r'''
-    f'(t) = \frac{df}{dt} = \frac{a^{t + dt} - a ^ t}{dt} \hspace{3 pt} \left( \text {where dt is small enough.} \right)
-''')
-
-st.markdown("""
-    Using elementary algebra, we can rewrite the expression as follows:
-""")
-
-st.latex(
-r'''
-    f'(t) = \frac{df}{dt} = a^t \left( \frac{a^{dt} - 1}{dt} \right)
-''')
-
-
-st.markdown("""
-    In other words, the derivative of an exponential function at `t` is equal to the value of the exponential function
-    at `t` multiplied by some number `c`.
-    
-    Note that for a given value of `a` and for a small enough constant value
-    of `dt`, `c` is also a constant value.
-
-    >**This is a key insight into the innate property of exponential functions that the rate of change of an exponential
-    >function is proportional to the value of the exponential function.**
-
-    Now, let's observe the values of this multiplier `c` for different values of `a`: 
+    Without further ado, let's just start plotting `f'(t)` and compare it against `f(t)`.
 """)
 
 def _plot_exponential_derivative() -> None:
-    interval = st.slider("Interval:", min_value=0.000001, max_value=1.0, step=0.00001, value=0.5, key='i2')
-    dt = st.number_input(
-        "Choose `dt` for computing derivative:",
-        min_value=0.00001, max_value=0.1, value=0.001, step=0.05
-    )
+
     t = np.arange(0., 10., interval)
 
-    a = st.number_input(
+    a = st.slider(
         "Choose a value of `a` as the base of the exponential function (example: 2.0):",
-        min_value=0.01, max_value=100.0, value=2.0, step=0.5
+        min_value=0.01, max_value=10.0, value=2.0, step=0.01
     )
 
     fig, ax = plt.subplots()
     ax.plot(t, a ** t, 'r+', label="f(t)")
     ax.plot(
-        t, (a ** (t + dt) - a ** t) / dt, 'bo', label="f'(t)",
+        t, (a ** (t + Δt) - a ** t) / Δt, 'bo', label="f'(t)",
     )
+    ax.plot(t, ((a ** (t + Δt) - a ** t) / Δt) / (a ** t), label="f'(t) / f(t)" )
 
     _ = ax.legend()
     ax.set_xlabel("t")
-    fig.suptitle(f"Base: {a}, c: {((a ** dt) - 1) / dt}")
+    fig.suptitle(f"Base: {a}, c: {((a ** Δt) - 1) / Δt} where c = f'(t) / f(t)")
     st.pyplot(fig, use_container_width=True)
     # st.plotly_chart(fig, use_container_width=True)
 
 _plot_exponential_derivative()
 
 st.markdown("""
-    > **Before moving to the next section, can you adjust the `a` so that the scaling
-    > factor between the derivative and the exponential is (almost) `1`?**
+    The most important observation from the above graph is the ratio `f'(t) / f(t)` is a constant
+    value for all values of `t`.  We will see shortly what that is the case, but the key insight
+    from this observation is that **the rate of change of an exponential function at some `t` is
+    proportional to the value of the exponential function at `t`.**  Mathematically speaking:
+    """)
 
-    Hint: If you play with the `a` number for a bit, you will see that the scaling
-    factor is close to `1.0` when `a` is approximately `2.72`.  Keep this number in mind,
-    as it will appear once again later in this tutorial.
+st.latex(r"""f(t) = a^t, f'(t) = K a^t""")
+
+st.markdown("""
+    By playing with the slider in the chart above, you can see that the value of `K` is different for
+    different values of `a`.
+
+    **It is worth conteplating at this point if there exists a value of `a` for which `K` is equal to `1`.**
+
+    Without getting entangled in the mathematical expressions, let's just try to figure out the value of
+    `a` for which `K = 1` by tweaking the slider in the above chart.  Give it a try!
+
+    >Hint: If you play with the `a` number for a bit, you will see that the scaling
+    >factor `K` is close to `1.0` when `a` is approximately `2.72`.  Keep this number in mind,
+    >as it will appear once again later in this tutorial.
     """
 )
 
